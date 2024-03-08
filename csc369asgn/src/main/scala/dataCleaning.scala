@@ -1,6 +1,7 @@
 import org.apache.spark.sql.SparkSession
 
 object dataCleaning {
+  
   def main(args: Array[String]): Unit = {
 
     import org.apache.spark.sql.SparkSession
@@ -14,37 +15,7 @@ object dataCleaning {
     case class Airline(airlineCode: String, airlineName: String)
     case class Airport(airportCode: String, name: String)
 
-    case class Flight(year: String,
-                      month: String,
-                      day: String,
-                      dayOfWeek: String,
-                      airline: String,
-                      flightNumber: String,
-                      tailNumber: String,
-                      originAirport: String,
-                      destinationAirport: String,
-                      scheduledDeparture: String,
-                      departureTime: String,
-                      departureDelay: String,
-                      taxiOut: String,
-                      wheelsOff: String,
-                      scheduledTime: String,
-                      elapsedTime: String,
-                      airTime: String,
-                      distance: String,
-                      wheelsOn: String,
-                      taxiIn: String,
-                      scheduledArrival: String,
-                      arrivalTime: String,
-                      arrivalDelay: String,
-                      diverted: String,
-                      cancelled: String,
-                      cancellationReason: String,
-                      airSystemDelay: String,
-                      securityDelay: String,
-                      airlineDelay: String,
-                      lateAircraftDelay: String,
-                      weatherDelay: String)
+
 
 
     // Load airlines and airports data
@@ -65,21 +36,54 @@ object dataCleaning {
     // Join flights with airlines and airports
     val flights = spark.sparkContext.textFile("data/flights.txt")
       .mapPartitionsWithIndex { (index, iter) => if (index == 0) iter.drop(1) else iter }
-      .map(line => {
-        val Array(year, month, day, dayOfWeek, airline, flightNumber, tailNumber, originAirport, destinationAirport, scheduledDeparture, departureTime, departureDelay, taxiOut, wheelsOff, scheduledTime, elapsedTime, airTime, distance, wheelsOn, taxiIn, scheduledArrival, arrivalTime, arrivalDelay, diverted, cancelled, cancellationReason, airSystemDelay, securityDelay, airlineDelay, lateAircraftDelay, weatherDelay) = line.split(",")
-        Flight(year, month, day, dayOfWeek, airline.toLowerCase, flightNumber, tailNumber, originAirport.toLowerCase, destinationAirport.toLowerCase, scheduledDeparture, departureTime, departureDelay, taxiOut, wheelsOff, scheduledTime, elapsedTime, airTime, distance, wheelsOn, taxiIn, scheduledArrival, arrivalTime, arrivalDelay, diverted, cancelled, cancellationReason, airSystemDelay, securityDelay, airlineDelay, lateAircraftDelay, weatherDelay)
-      })
+      .flatMap { line =>
+        val parts = line.split(",")
+        if (parts.length >= 31) {
+          val airline = parts(4).toLowerCase
+          val originAirport = parts(7).toLowerCase
+          val destinationAirport = parts(8).toLowerCase
+          val year = parts(1).toLowerCase
+          val month = parts(2).toLowerCase
+          val day = parts(3).toLowerCase
+          val dayOfWeek = parts(0).toLowerCase
+          val flightNumber = parts(5).toLowerCase
+          //val tailNumber = parts(6).toLowerCase
+          val scheduledDeparture = parts(9).toLowerCase
+          val departureTime = parts(10).toLowerCase
+          //val departureDelay = parts(11).toLowerCase
+          //val taxiOut = parts(12).toLowerCase
+          //val wheelsOff = parts(13).toLowerCase
+          val scheduledTime = parts(14).toLowerCase
+          //val elapsedTime = parts(15).toLowerCase
+          val airTime = parts(16).toLowerCase
+          val distance = parts(17).toLowerCase
+          //val wheelsOn = parts(18).toLowerCase
+          //val taxiIn = parts(19).toLowerCase
+          val scheduledArrival = parts(20).toLowerCase
+          //val arrivalTime = parts(21).toLowerCase
+          val arrivalDelay = parts(22).toLowerCase
+          //val diverted = parts(23).toLowerCase
+          val cancelled = parts(24).toLowerCase
+          val cancellationReason = parts(25).toLowerCase
+          val airSystemDelay = parts(26).toLowerCase
+          val securityDelay = parts(27).toLowerCase
+          val airlineDelay = parts(28).toLowerCase
+          val lateAircraftDelay = parts(29).toLowerCase
+          val weatherDelay = parts(30).toLowerCase
 
-    val flightsWithAirlineInfo = flights.map(flight => (flight.airline, flight)).join(airlines.map(airline => (airline.airlineCode, airline))).map {
-      case (_, (flight, airline)) => (flight, airline)
-    }
+          Some((year, month, day, dayOfWeek, airline, flightNumber, originAirport, destinationAirport, scheduledDeparture, departureTime,  scheduledTime,  airTime, distance, scheduledArrival,  arrivalDelay,  cancelled, cancellationReason, airSystemDelay, securityDelay, airlineDelay, lateAircraftDelay, weatherDelay))
+        } else {
+          None
+        }
+      }
 
-    val flightsWithAirportInfo = flightsWithAirlineInfo.map(flightWithAirline => (flightWithAirline._1.originAirport, flightWithAirline)).join(airports.map(airport => (airport.airportCode, airport))).map {
-      case (_, (flightWithAirline, airport)) => (flightWithAirline._1, flightWithAirline._2, airport)
-    }
 
-    // Now flightsWithAirportInfo contains flight data joined with both airline and airport information
+    flights.collect().foreach(println(_))
+
+
 
 
   }
+
+
 }
