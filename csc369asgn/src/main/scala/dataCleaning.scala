@@ -6,7 +6,7 @@ import vegas._
 
 
 object dataCleaning {
-  
+
   def main(args: Array[String]): Unit = {
     Logger.getLogger("org").setLevel(Level.OFF)
     Logger.getLogger("akka").setLevel(Level.OFF)
@@ -24,14 +24,14 @@ object dataCleaning {
 
 
     // Load airlines and airports data
-    val airlines = spark.sparkContext.textFile("src/main/data/airlines.csv")
+    val airlines = spark.sparkContext.textFile("data/airlines.csv")
       .mapPartitionsWithIndex { (index, iter) => if (index == 0) iter.drop(1) else iter }
       .map(line => {
         val Array(airlineCode, airlineName) = line.split(",")
         Airline(airlineCode.trim, airlineName.trim)
       })
 
-    val airports = spark.sparkContext.textFile("src/main/data/airports.csv")
+    val airports = spark.sparkContext.textFile("data/airports.csv")
       .mapPartitionsWithIndex { (index, iter) => if (index == 0) iter.drop(1) else iter }
       .map(line => {
         val Array(airportCode, name, _, _, _, _, _) = line.split(",") // Assuming only need airport code and name
@@ -39,7 +39,7 @@ object dataCleaning {
       })
 
     // Join flights with airlines and airports
-    val flights = spark.sparkContext.textFile("src/main/data/flights.csv")
+    val flights = spark.sparkContext.textFile("data/flights.csv")
       .mapPartitionsWithIndex { (index, iter) => if (index == 0) iter.drop(1) else iter }
       .filter(_.split(",").length >= 31)
       .map { line =>
@@ -52,22 +52,13 @@ object dataCleaning {
           val day = parts(2).toLowerCase
           val dayOfWeek = parts(3).toLowerCase
           val flightNumber = parts(6).toLowerCase
-          //val tailNumber = parts(6).toLowerCase
           val scheduledDeparture = parts(9).toLowerCase
           val departureTime = parts(10).toLowerCase
-          //val departureDelay = parts(11).toLowerCase
-          //val taxiOut = parts(12).toLowerCase
-          //val wheelsOff = parts(13).toLowerCase
           val scheduledTime = parts(14).toLowerCase
-          //val elapsedTime = parts(15).toLowerCase
           val airTime = parts(16).toLowerCase
           val distance = parts(17).toLowerCase
-          //val wheelsOn = parts(18).toLowerCase
-          //val taxiIn = parts(19).toLowerCase
           val scheduledArrival = parts(20).toLowerCase
-          //val arrivalTime = parts(21).toLowerCase
           val arrivalDelay = parts(22).toLowerCase
-          //val diverted = parts(23).toLowerCase
           val cancelled = parts(24).toLowerCase
           val cancellationReason = parts(25).toLowerCase
           val airSystemDelay = parts(26).toLowerCase
@@ -76,12 +67,14 @@ object dataCleaning {
           val lateAircraftDelay = parts(29).toLowerCase
           val weatherDelay = parts(30).toLowerCase
 
-          //Some((year, month, day, dayOfWeek, airline, flightNumber, originAirport, destinationAirport, scheduledDeparture, departureTime,  scheduledTime,  airTime, distance, scheduledArrival,  arrivalDelay,  cancelled, cancellationReason, airSystemDelay, securityDelay, airlineDelay, lateAircraftDelay, weatherDelay))
           (year, month, day, dayOfWeek, airline, flightNumber, originAirport, destinationAirport, scheduledDeparture, departureTime,  scheduledTime,  airTime, distance, scheduledArrival,  arrivalDelay,  cancelled, cancellationReason, airSystemDelay, securityDelay, airlineDelay, lateAircraftDelay, weatherDelay)
       }
 
-    // ex: delay by airline, month, dayofWeek
-    val airlineDelayRDD = flights.map{
+    val juneFlights = flights.filter { case (_, month, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
+      month == "6"
+    }
+
+    val airlineDelayRDD = juneFlights.map{
       case (year, month, day, dayOfWeek, airline, flightNumber, originAirport, destinationAirport, scheduledDeparture, departureTime,  scheduledTime,  airTime, distance, scheduledArrival,  arrivalDelay,  cancelled, cancellationReason, airSystemDelay, securityDelay, airlineDelay, lateAircraftDelay, weatherDelay)
       =>
         ((airline, month, dayOfWeek), arrivalDelay.toInt)
@@ -91,12 +84,11 @@ object dataCleaning {
     airlineDelayRDD.sortByKey().collect().foreach(println)
 
 
-
-//    try using Vega on Linear Regression Model
     val flightsData = spark.read.option("header", "true")
       .option("inferSchema", "true")
-      .csv("src/main/data/flights.csv")
-      .limit(300)
+      .csv("data/flights.csv")
+      .limit(10000)
+
 
     val assembler = new VectorAssembler()
       .setInputCols(Array("MONTH", "DAY_OF_WEEK", "SCHEDULED_DEPARTURE",

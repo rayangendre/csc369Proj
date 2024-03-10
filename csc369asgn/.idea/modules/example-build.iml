@@ -96,8 +96,11 @@
     </orderEntry>
   </component>
   <component name="SbtModule">
-    <option name="buildForURI" value="file:$MODULE_DIR$/../../" />
+    <option name="buildForURI" value="file:/$MODULE_DIR$/../../../../../../../../Cal%20Poly/Fourth%20Year/Winter%202024/CSC%20369/csc369Proj/csc369asgn/" />
     <option name="imports" value="_root_.sbt.Keys._, _root_.sbt._, _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.scala.xml.{TopScope=&gt;SUB:DOLLARscope}" />
-    <option name="resolvers" value="$USER_HOME$/.ivy2/cache|ivy|true|Local cache, https://repo1.maven.org/maven2/|maven|public, https://repository.apache.org/snapshots/|maven|apache-snapshots" />
+    <option name="resolvers" value="C:\Users\bohle\.ivy2\cache|ivy|true|Local cache, https://repo1.maven.org/maven2/|maven|public, https://repository.apache.org/snapshots/|maven|apache-snapshots" />
+  </component>
+  <component name="SonarLintModuleSettings">
+    <option name="uniqueId" value="29069846-1115-4e50-ada4-fc35a9139c81" />
   </component>
 </module>

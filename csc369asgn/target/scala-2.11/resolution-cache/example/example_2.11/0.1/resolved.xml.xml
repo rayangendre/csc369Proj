@@ -4,7 +4,7 @@
 		module="example_2.11"
 		revision="0.1"
 		status="integration"
-		publication="20240306114840"
+		publication="20240310122831"
 	>
 		<description>
 		example
@@ -37,5 +37,6 @@
 		<dependency org="org.apache.spark" name="spark-mllib_2.11" rev="2.4.8" conf="compile->default(compile)"/>
 		<dependency org="org.apache.spark" name="spark-streaming_2.11" rev="2.4.8" conf="compile->default(compile)"/>
 		<dependency org="org.apache.spark" name="spark-hive_2.11" rev="2.4.8" conf="compile->default(compile)"/>
+		<dependency org="org.vegas-viz" name="vegas_2.11" rev="0.3.11" conf="compile->default(compile)"/>
 	</dependencies>
 </ivy-module>
