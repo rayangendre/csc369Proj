@@ -8,7 +8,7 @@ import org.apache.spark.sql.catalyst.encoders.RowEncoder
 
 object UseKNN {
 
-  def main(args: Array[String]): Unit = {
+    def main(args: Array[String]): Unit = {
     Logger.getLogger("org").setLevel(Level.OFF)
     Logger.getLogger("akka").setLevel(Level.OFF)
 
@@ -19,17 +19,40 @@ object UseKNN {
 
     val flightsData = spark.read.option("header", "true")
       .option("inferSchema", "true")
-      .csv("src/main/data/flights.csv")
-      .limit(1000)
+      .csv("data/flights.csv")
+      .filter("MONTH = 6")
+      .sample(false, 0.1)
+      .limit(15000)
+
+    val airlineIndexer = new StringIndexer()
+      .setInputCol("AIRLINE")
+      .setOutputCol("AIRLINE_INDEX")
+
+    val originAirportIndexer = new StringIndexer()
+      .setInputCol("ORIGIN_AIRPORT")
+      .setOutputCol("ORIGIN_AIRPORT_INDEX")
+
+    val destinationAirportIndexer = new StringIndexer()
+      .setInputCol("DESTINATION_AIRPORT")
+      .setOutputCol("DESTINATION_AIRPORT_INDEX")
+
+    val indexedData = airlineIndexer.fit(flightsData)
+      .transform(originAirportIndexer.fit(flightsData)
+        .transform(destinationAirportIndexer.fit(flightsData)
+          .transform(flightsData)))
+
+
+    indexedData.select("AIRLINE", "AIRLINE_INDEX").distinct().show()
+
 
     val assembler = new VectorAssembler()
-      .setInputCols(Array("MONTH", "DAY_OF_WEEK", "SCHEDULED_DEPARTURE",
-        "DEPARTURE_TIME", "SCHEDULED_TIME", "AIR_TIME",
-        "DISTANCE", "SCHEDULED_ARRIVAL"))
+      .setInputCols(Array("AIRLINE_INDEX", "DAY_OF_WEEK", "SCHEDULED_DEPARTURE",
+        "ORIGIN_AIRPORT_INDEX", "SCHEDULED_TIME", "AIR_TIME",
+        "DISTANCE", "SCHEDULED_ARRIVAL", "DESTINATION_AIRPORT_INDEX"))
       .setOutputCol("features")
       .setHandleInvalid("skip")
 
-    val assembledData = assembler.transform(flightsData).select("features", "ARRIVAL_DELAY").na.drop()
+    val assembledData = assembler.transform(indexedData).select("features", "ARRIVAL_DELAY").na.drop()
     val Array(trainingData, testData) = assembledData.randomSplit(Array(0.8, 0.2))
 
     //    convert training features into array for KNN
@@ -70,14 +93,28 @@ object UseKNN {
       }
     }
 
+    val totalTestInstances = testFeaturesArrays.length
+    var correctPredictions = 0
+
     val knn = new KNN(2)
     knn.train(trainFeaturesArrays, trainLabelsArray)
 
-    //    use model on test features, compare with actual test label
-    testFeaturesArrays.zip(testLabelsArray).foreach{ case (testFeature,  testLabel) =>
+    println(testFeaturesArrays.length)
+
+    testFeaturesArrays.zip(testLabelsArray).foreach { case (testFeature, testLabel) =>
       val predictedLabel = knn.predict(testFeature)
-      println(s"predicted: $predictedLabel, actual: $testLabel")
+      if (predictedLabel == testLabel) {
+        correctPredictions += 1
+      }
     }
+
+    val accuracy = correctPredictions.toDouble / totalTestInstances
+    val error = 1 - accuracy
+
+    println(s"Accuracy: $accuracy")
+    println(s"Error rate: $error")
+
+
 
   }
 

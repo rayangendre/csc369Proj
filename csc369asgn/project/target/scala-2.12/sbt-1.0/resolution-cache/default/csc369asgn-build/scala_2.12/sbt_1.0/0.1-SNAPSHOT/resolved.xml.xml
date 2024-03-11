@@ -4,7 +4,7 @@
 		module="csc369asgn-build"
 		revision="0.1-SNAPSHOT"
 		status="integration"
-		publication="20240306114810"
+		publication="20240311001505"
 		e:sbtVersion="1.0" e:scalaVersion="2.12"
 	>
 		<description>
