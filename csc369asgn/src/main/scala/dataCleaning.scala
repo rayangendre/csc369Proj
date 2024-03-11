@@ -34,7 +34,7 @@ object dataCleaning {
     val airports = spark.sparkContext.textFile("data/airports.csv")
       .mapPartitionsWithIndex { (index, iter) => if (index == 0) iter.drop(1) else iter }
       .map(line => {
-        val Array(airportCode, name, _, _, _, _, _) = line.split(",") // Assuming only need airport code and name
+        val Array(airportCode, name, _, _, _, _, _) = line.split(",")
          Airport(airportCode, name)
       })
 
@@ -87,8 +87,7 @@ object dataCleaning {
     val flightsData = spark.read.option("header", "true")
       .option("inferSchema", "true")
       .csv("data/flights.csv")
-      .limit(10000)
-
+      .filter("MONTH = 6")
 
     val assembler = new VectorAssembler()
       .setInputCols(Array("MONTH", "DAY_OF_WEEK", "SCHEDULED_DEPARTURE",
