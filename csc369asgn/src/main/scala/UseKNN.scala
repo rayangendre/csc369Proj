@@ -1,5 +1,5 @@
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import org.apache.spark.ml.regression.LinearRegression
 import org.apache.spark.sql.{Encoder, Encoders, Row, SparkSession}
 import org.apache.spark.ml.linalg.{DenseVector, Vector, Vectors}
@@ -8,7 +8,7 @@ import org.apache.spark.sql.catalyst.encoders.RowEncoder
 
 object UseKNN {
 
-    def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit = {
     Logger.getLogger("org").setLevel(Level.OFF)
     Logger.getLogger("akka").setLevel(Level.OFF)
 
@@ -47,7 +47,7 @@ object UseKNN {
 
     val assembler = new VectorAssembler()
       .setInputCols(Array("AIRLINE_INDEX", "DAY_OF_WEEK", "SCHEDULED_DEPARTURE",
-        "ORIGIN_AIRPORT_INDEX", "SCHEDULED_TIME", "AIR_TIME",
+        "ORIGIN_AIRPORT_INDEX", "SCHEDULED_TIME",
         "DISTANCE", "SCHEDULED_ARRIVAL", "DESTINATION_AIRPORT_INDEX"))
       .setOutputCol("features")
       .setHandleInvalid("skip")
