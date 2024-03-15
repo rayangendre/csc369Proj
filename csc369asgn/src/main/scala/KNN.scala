@@ -1,9 +1,12 @@
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.DataFrame
 class KNN(k: Int) {
 
-  // Load training data (features and labels)
+  // Load and store your training data (features and labels) here
   var trainingData: (Array[Array[Double]], Array[Int]) = null
 
   def train(features: Array[Array[Double]], labels: Array[Int]): Unit = {
+    // Extract features and labels from DataFrame
     trainingData = (features, labels)
   }
 
@@ -27,6 +30,7 @@ class KNN(k: Int) {
   }
 
   def euclideanDistance(point1: Array[Double], point2: Array[Double]): Double = {
+    // Calculate squared distance for efficiency
     (point1 zip point2).map { case (x1, x2) =>
       math.pow(x1 - x2, 2)
     }.sum

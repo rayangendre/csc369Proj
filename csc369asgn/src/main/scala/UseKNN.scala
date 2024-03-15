@@ -55,6 +55,9 @@ object UseKNN {
     val assembledData = assembler.transform(indexedData).select("features", "ARRIVAL_DELAY").na.drop()
     val Array(trainingData, testData) = assembledData.randomSplit(Array(0.8, 0.2))
 
+    val firstFiveItems = assembledData.take(5)
+    firstFiveItems.foreach(println)
+
     //    convert training features into array for KNN
     val trainFeatures: Array[Row] = trainingData.select("features").collect()
     val trainFeaturesArrays: Array[Array[Double]] = trainFeatures.map { row =>
@@ -96,7 +99,7 @@ object UseKNN {
     val totalTestInstances = testFeaturesArrays.length
     var correctPredictions = 0
 
-    val knn = new KNN(2)
+    val knn = new KNN(14)
     knn.train(trainFeaturesArrays, trainLabelsArray)
 
     println(testFeaturesArrays.length)
